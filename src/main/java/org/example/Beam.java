@@ -7,17 +7,28 @@ public class Beam {
     public int x;
     public int y;
     public Map map;
-    public Beam(Map map, BeamDirection direction) {
+    public Beam(Map map, BeamDirection direction, int x, int y) {
         this.direction = direction;
         this.map = map;
+        this.x = x;
+        this.y = y;
+
+        checkIfTooBig();
 
         Main.beams.add(this);
     }
 
-    public void move() {
+    public boolean checkIfTooBig() {
         if (x >= map.getWidth() || y >= map.getHeight() || x < 0 || y < 0) {
             Main.beams.remove(this);
-            Main.drawMap();
+            return true;
+        }
+        return false;
+    }
+
+    public void move() {
+        //System.out.println(direction + " (" + x + ", " + y + ")");
+        if (checkIfTooBig()) {
             return;
         }
         doItem();
@@ -38,22 +49,49 @@ public class Beam {
         return map.getItem(x, y);
     }
 
+    public void setDirection(BeamDirection dir) {
+        direction = dir;
+    }
+
     public void doItem() {
-        switch (getItem()) {
+        String item = getItem();
+        switch (item) {
             case "/":
-                rotateLeft();
+                mirrorB();
+                break;
             case "\\":
-                rotateRight();
+                mirrorA();
+                break;
             case "|":
                 if (direction == BeamDirection.LEFT || direction == BeamDirection.RIGHT) {
-                    direction = BeamDirection.DOWN;
-                    //new Beam(map, BeamDirection.UP);
+                    direction = BeamDirection.UP;
+                    new Beam(map, BeamDirection.DOWN, x, y+1);
+                    break;
                 }
             case "-":
                 if (direction == BeamDirection.UP || direction == BeamDirection.DOWN) {
                     direction = BeamDirection.LEFT;
-                    //new Beam(map, BeamDirection.RIGHT);
+                    new Beam(map, BeamDirection.RIGHT, x+1, y);
+                    break;
                 }
+        }
+    }
+
+    public void mirrorA() {
+        switch (direction) {
+            case DOWN -> setDirection(BeamDirection.RIGHT);
+            case UP -> setDirection(BeamDirection.LEFT);
+            case RIGHT -> setDirection(BeamDirection.DOWN);
+            case LEFT -> setDirection(BeamDirection.UP);
+        }
+    }
+
+    public void mirrorB() {
+        switch (direction) {
+            case DOWN -> setDirection(BeamDirection.LEFT);
+            case UP -> setDirection(BeamDirection.RIGHT);
+            case RIGHT -> setDirection(BeamDirection.UP);
+            case LEFT -> setDirection(BeamDirection.DOWN);
         }
     }
 
@@ -90,19 +128,15 @@ public class Beam {
     }
 
     public void moveLeft() {
-        System.out.println("Left");
         x -= 1;
     }
     public void moveRight() {
-        System.out.println("Right");
         x += 1;
     }
     public void moveUp() {
         y -= 1;
-        System.out.println("Up");
     }
     public void moveDown() {
         y += 1;
-        System.out.println("Down");
     }
 }
